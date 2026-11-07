@@ -42,10 +42,10 @@ end $$;
 create function public.nr_handle_update(p_update jsonb,p_admin bigint,p_code_hash text default null) returns jsonb language plpgsql security definer set search_path=pg_catalog,requests_app as $$
 declare m jsonb; f jsonb; cb jsonb; uid bigint; actor bigint; c bigint; txt text; data text; k text; t requests_app.tickets; pr requests_app.prompts; row_item record; owner boolean; n bigint; page int:=0; filter text:='all'; parts text[]; buttons jsonb:='[]'::jsonb; total bigint; o requests_app.outbox; count_rate bigint; mid bigint;
 begin
- if jsonb_typeof(p_update)<>'object' or jsonb_typeof(p_update->'update_id')<>'number' then raise exception 'invalid_update';end if;
+ if jsonb_typeof(p_update) is distinct from 'object' or jsonb_typeof(p_update->'update_id') is distinct from 'number' then raise exception 'invalid_update';end if;
  uid:=(p_update->>'update_id')::bigint;
  cb:=p_update->'callback_query';m:=coalesce(cb->'message',p_update->'message');f:=coalesce(cb->'from',m->'from');
- if m is null or f is null or m->'chat'->>'type'<>'private' or coalesce((f->>'is_bot')::boolean,true) or jsonb_typeof(f->'id')<>'number' or jsonb_typeof(m->'chat'->'id')<>'number' then return jsonb_build_object('ignored',true);end if;
+ if m is null or f is null or m->'chat'->>'type' is distinct from 'private' or coalesce((f->>'is_bot')::boolean,true) or jsonb_typeof(f->'id') is distinct from 'number' or jsonb_typeof(m->'chat'->'id') is distinct from 'number' then return jsonb_build_object('ignored',true);end if;
  actor:=(f->>'id')::bigint;c:=(m->'chat'->>'id')::bigint;
  if actor<>c or actor<=0 then return jsonb_build_object('ignored',true);end if;
  owner:=coalesce(p_admin,0)>0 and actor=p_admin;
