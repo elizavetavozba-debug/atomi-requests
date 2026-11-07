@@ -1,0 +1,1 @@
+{"name":"atomi-requests","version":"1.0.0","private":true,"type":"module","scripts":{"test":"node --test --test-concurrency=1 tests/*.test.mjs","check":"node scripts/check.mjs","preview":"node scripts/preview.mjs","bundle":"node scripts/bundle.mjs"},"devDependencies":{"@electric-sql/pglite":"0.3.14"},"engines":{"node":">=22"}}

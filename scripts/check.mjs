@@ -1,0 +1,7 @@
+import fs from 'node:fs/promises';import {execFileSync} from 'node:child_process';import path from 'node:path';
+const forbidden=[/\b\d{6,}:[A-Za-z0-9_-]{25,}\b/,/\bsb_secret_[A-Za-z0-9_-]+/,/eyJ[A-Za-z0-9_-]{15,}\.[A-Za-z0-9_-]{15,}\.[A-Za-z0-9_-]{15,}/];
+async function walk(dir){const result=[];for(const ent of await fs.readdir(dir,{withFileTypes:true})){if(['.local','node_modules','.git','.temp','.branches'].includes(ent.name))continue;const p=path.join(dir,ent.name);result.push(...(ent.isDirectory()?await walk(p):[p]));}return result;}
+for(const file of await walk('.')){const data=await fs.readFile(file,'utf8');if(forbidden.some(re=>re.test(data)))throw new Error(`Возможный секрет: ${file}`);if(/\.(js|mjs)$/.test(file))execFileSync(process.execPath,['--check',file],{stdio:'pipe'});}
+for(const file of await walk('public')){const text=await fs.readFile(file,'utf8');if(/BOT_TOKEN|SERVER_DB_KEY|SERVICE_ROLE_KEY|FORM_SECRET|SETUP_SECRET|TG_WEBHOOK_SECRET/.test(text))throw new Error(`Серверная настройка в public: ${file}`);if(/(?:src|href)=["']\//.test(text))throw new Error(`Абсолютный путь в ${file}`);}
+try{const files=execFileSync(process.env.GIT_BIN||'git',['ls-files','-z'],{encoding:'utf8'}).split('\0');if(files.some(f=>f.startsWith('.local/')||/(^|\/)\.env(?:\.|$)/.test(f)||f.startsWith('supabase/.temp/')))throw new Error('Служебные файлы отслеживаются Git');}catch(e){if(e.message?.includes('Служебные'))throw e;}
+console.log('Синтаксис, публичные ресурсы и отсутствие секретов проверены.');

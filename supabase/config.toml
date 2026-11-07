@@ -1,0 +1,8 @@
+project_id = "atomi-requests"
+# Only these three public entry points use their own request authentication.
+[functions.create-application]
+verify_jwt = false
+[functions.telegram-hook]
+verify_jwt = false
+[functions.setup-telegram]
+verify_jwt = false
